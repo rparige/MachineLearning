@@ -1,46 +1,9 @@
----
-title: "Predict How well People Workout With Dumbbells!"
-author: "Rao Parige"
-date: "December 2014"
-output:
-  html_document:
-    keep_md: yes
----
+# Predict How well People Workout With Dumbbells!
+Rao Parige  
+December 2014  
 
-```{r global1, echo = FALSE, warning=FALSE, message=FALSE, include=FALSE}
-knitr::opts_chunk$set(tidy = FALSE, echo=FALSE)
-```
-```{r lib, echo = FALSE, warning=FALSE, message=FALSE}
-library(caret)
-library(ggplot2)
-library(lattice)
-library(AppliedPredictiveModeling)
-library(Hmisc)
-library(e1071)
-library(AppliedPredictiveModeling)
-library(caret)
-library(ggplot2)
-library(lattice)
-library(rpart)
-library(rattle)
-library(rpart.plot)
-library(pgmm)
-library(randomForest)
-library(randomForest)
-library(gbm)
-library(doParallel)
-library(MASS)
-library(plyr)
-library(pROC)
-library(elasticnet)
-library(lars)
-library(klaR)
-library(combinat)
-library(mgcv)
-library(nlme)
-library(grid)
-library(gridExtra)
-```
+
+
 
 
 ##Executive Summary
@@ -57,25 +20,12 @@ In order to ensure reproducibility of this analysis independently for peer revie
 
 Both training and test datasets from the provide website link are loaded into respective local datasets.
 
-```{r acquireData, echo = FALSE}
-#Acquire training and test files
-trainRaw<- read.csv("pml-training.csv")
-testRaw<- read.csv("pml-testing.csv")
-```
 
 
 
 
-```{r exclude, echo=FALSE}
-ExclusionDF <- data.frame(colSums(!is.na(trainRaw))) #160 variables with count of NA values
-colnames(ExclusionDF)[1] <- "count"
-ExclusionDF <- subset(ExclusionDF, count < 1000) #67 variables with mostly NA values to be excluded from the model
-exclusionList <- rownames(ExclusionDF)
-exclusionList <- c(exclusionList, "X", "user_name" , "raw_timestamp_part_1" ,"raw_timestamp_part_2")
-exclusionList <- c(exclusionList, "cvtd_timestamp","new_window","num_window")
-trainex <- trainRaw[, !colnames(trainRaw) %in% exclusionList]
-trainex$classe <- as.numeric(trainex$classe)
-```
+
+
 
 ###2. Exploratory Data Analysis
 ####2.1  Input data structure and content anaylsis
@@ -88,52 +38,17 @@ The input dataset variables are named for easy understanding and purpose of the 
 The next step in the exploratory analysis is to identify the subset of  variables that have the most influence on the prediction outcome which is the workout performance classification, thus reducing the prediction variable set most useful for prediction modeling.  This is also important since the number of variables and volume of data under consideration is not small.
 10% of training data is subset into a base dataset and a linear regression model is built against all predictor variables. Then, F-test is employed to identify variables with most significant influence. This helped reduce the number of predictor variables to 37 from a starter set of 86 variables used in the linear regression model.
 
-```{r exploratory, echo = FALSE, results='hide'}
-set.seed(2345)
-trainpartitionbase <- createDataPartition(y=trainex$classe, p=0.1,list = FALSE)
-trainbase <- trainex[trainpartitionbase,]
-baseFit1 <- lm(classe~., trainbase) # 2 minutes 10% data
-drop11 <- drop1(baseFit1, test="F",trace=TRUE) # 10% data 
-```
+
 
 
 ###3 Tidy training, validation, and test datasets
 
 An inclusion variable list of 38 variables from the base regression model is created.  Using this list, new tidy training, validation and testing datasets with only the 37 predictors are created. Input training data is distributed between and training and validation sets with 60% for training dataset and 40% for cross validation. A random number seed is setup to make sure that this entire modeling process can be replicated with same data distribution between datasets.
 
-```{r includeRequired, echo=FALSE}
-inclusionList1 <- c('classe'
-  ,'total_accel_belt','total_accel_arm','total_accel_dumbbell','total_accel_forearm'
-  ,'accel_belt_x' ,'accel_belt_y' ,'accel_belt_z'
-  ,'accel_arm_x', 'accel_arm_y', 'accel_arm_z'
-  ,'accel_dumbbell_x', 'accel_dumbbell_y', 'accel_dumbbell_z'
-  ,'accel_forearm_x', 'accel_forearm_y' , 'accel_forearm_z'
-  ,'magnet_belt_x','magnet_belt_y','magnet_belt_z'
-  ,'magnet_forearm_x','magnet_forearm_y','magnet_forearm_z'
-  ,'magnet_arm_z'
-  ,'magnet_dumbbell_x','magnet_dumbbell_y','magnet_dumbbell_z'
-  ,'yaw_belt','yaw_dumbbell'
-  ,'roll_dumbbell','roll_belt','roll_forearm'
-  ,'pitch_belt','pitch_arm','pitch_forearm','pitch_dumbbell'
-  ,'gyros_dumbbell_y','gyros_dumbbell_z'
-)
-
-inclusionList2 <- inclusionList1
-inclusionList2[1] <- 'problem_id'
-```
 
 
-```{r train&validationData, echo = FALSE}
 
-#Break the training set into train and validation datasets based on classe
-trainInc <- trainRaw[inclusionList1]
-testing <- testRaw[inclusionList2]
 
-set.seed(2345)
-trainpartition <- createDataPartition(y=trainInc$classe, p=0.6,list = FALSE)
-training <- trainInc[trainpartition,]
-validation <- trainInc[-trainpartition,]
-```
 
 
 ###4. Prediction Modeling
@@ -142,28 +57,18 @@ Since most of the predictors in the dataset are weak predictors at best (based o
 ####4.1 Boosting with Trees Model [GBM]
 The generated GBM prediction model is able predict the classification (Classe) with 95.67% accuracy against the validation dataset.  This cross validation accuracy makes the generated prediction model acceptable.  However, combining with a second prediction model may potentially improve the prediction accuracy. 
 
-```{r GBMmodel, echo=FALSE}
-fitGBM <- train(classe~., data=training,method="gbm",verbose = FALSE)
-#varImp(fitGBM)
-pGBMv <- predict(fitGBM, validation)
-aGBMv <- sum(pGBMv == validation$classe)/length(pGBMv)
-aGBMv
-pGBMt <-predict(fitGBM, training)
-pGBMtest <- predict(fitGBM, testing)
+
+```
+## [1] 0.9566658
 ```
 
 
 ####4.2 Linear Discriminant Analysis Model [LDA]
 A second prediction model using LDA is run against the same training dataset.  This model predicted the classification with only 68.43% accuracy against the validation dataset. This model on its own is not good for predicting the classification.  
 
-```{r LDAmode, echo=FALSE}
-fitLDA <- train(classe~., data=training,method="lda",verbose = FALSE)
-#varImp(fitLDA)
-pLDAv <- predict(fitLDA, validation)
-aLDAv <- sum(pLDAv == validation$classe)/length(pLDAv)
-aLDAv
-pLDAt <-predict(fitLDA, training)
-pLDAtest <- predict(fitLDA, testing)
+
+```
+## [1] 0.6842977
 ```
 
 ####4.3 Combined Model [GBM + LDA]
@@ -177,21 +82,9 @@ Figure 2 plots the predictions where both models predicted the same (TRUE). This
 Figure 2 provides GBM Model Accuracy plot as the model processed through iterations, peaking at 150 iterations.
 
 
-```{r combinedModel, echo=FALSE}
-#Combd Model
-cpredtDF <- data.frame(classe = training$classe, GBM = pGBMt, LDA = pLDAt) # 5 minutes
-fitCOMBO <- train(classe~., data=cpredtDF, method = "gbm", verbose = FALSE)
-pCOMBOt <- predict(fitCOMBO, cpredtDF)
-aCOMBOt <- sum(pCOMBOt == cpredtDF$classe)/length(pCOMBOt)
 
-cpredvDF <- data.frame(classe = validation$classe, GBM = pGBMv, LDA = pLDAv)
-pCOMBOv <- predict(fitCOMBO, cpredvDF)
-aCOMBOv <- sum(pCOMBOv == cpredvDF$classe)/length(pCOMBOv)
-aCOMBOv
-
-cpredtestDF <- data.frame(problem_id = testing$problem_id, GBM = pGBMtest, LDA = pLDAtest)
-pCOMBOtest <- predict(fitCOMBO, cpredtestDF)
-
+```
+## [1] 0.9566658
 ```
 
 ####4.4 Out of Sample Error Analysis
@@ -206,8 +99,33 @@ Given the large number of predictor variables, the combined prediction model wit
 
 ####Table 1: Most influential Predictors [GBM Model- Boosting With Trees] 
 
-```{r MostImpPredictors, echo = FALSE}
-varImp(fitGBM)
+
+```
+## gbm variable importance
+## 
+##   only 20 most important variables shown (out of 37)
+## 
+##                   Overall
+## roll_belt         100.000
+## pitch_forearm      45.706
+## yaw_belt           41.486
+## magnet_dumbbell_z  29.961
+## magnet_dumbbell_y  27.335
+## roll_forearm       26.234
+## magnet_belt_z      19.000
+## accel_forearm_x    13.547
+## accel_dumbbell_y   11.668
+## pitch_belt         10.549
+## roll_dumbbell      10.389
+## accel_forearm_z     9.562
+## gyros_dumbbell_y    8.880
+## magnet_forearm_z    8.413
+## magnet_arm_z        7.187
+## accel_dumbbell_x    7.121
+## magnet_dumbbell_x   5.288
+## accel_arm_x         5.057
+## magnet_belt_y       4.707
+## magnet_belt_x       4.241
 ```
  
 ### 
@@ -219,43 +137,20 @@ varImp(fitGBM)
 
 ####Figure 1. Prediction Accuracy  - GBM + LDA Combined Model [Validation Dataset]
 
-```{r PredictionPlot1, echo=FALSE, fig.height=4, fig.width=6.9}
-validation$Prediction <- pCOMBOv==validation$classe
-qp1 <- qplot(pCOMBOv, fill=Prediction, data=validation)  #1
-qp1<- qp1 + xlab("Predicted Class [Validation Dataset]") + ylab("Count")
-qp1
-```
+![](./AssignmentRMDFinal_files/figure-html/PredictionPlot1-1.png) 
 
 
 ####Figure 2. Prediction Accuracy - GBM vs. LDA [Validation Dataset]
 
 
-```{r PredictionPlot2, echo=FALSE, fig.height=4, fig.width=7.25}
-EqualPrediction = (pGBMv == pLDAv)
-qp2 <- qplot(classe, fill = EqualPrediction, data=validation)
-qp2 <- qp2 + xlab("Predicted Class [Validation Dataset]") + ylab("Count")
-qp2
-```
+![](./AssignmentRMDFinal_files/figure-html/PredictionPlot2-1.png) 
 
 ###
 
 ####Figure 3. GBM Model - Accuracy Plot
 
-```{r fitGBMPlot, echo = FALSE, fig.height=5.5, fig.width=7}
-#par(mfrow = c(2,2))
-plot(fitGBM)
-```
+![](./AssignmentRMDFinal_files/figure-html/fitGBMPlot-1.png) 
 
-```{r resultsfolder, echo = FALSE}
-# function to create folder for test results
-pml_write_files = function(x){
-  n = length(x)
-  for(i in 1:n){
-    filename = paste0("problem_id_",i,".txt")
-    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
-  }
-}
-pml_write_files(pCOMBOtest)
-```
+
 
 [END OF REPORT]
