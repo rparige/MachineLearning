@@ -127,12 +127,7 @@ Given the large number of predictor variables, the combined prediction model wit
 ## magnet_belt_y       4.707
 ## magnet_belt_x       4.241
 ```
- 
-### 
-###
-###
-###
-###
+
 
 
 ####Figure 1. Prediction Accuracy  - GBM + LDA Combined Model [Validation Dataset]
@@ -143,13 +138,16 @@ Given the large number of predictor variables, the combined prediction model wit
 ####Figure 2. Prediction Accuracy - GBM vs. LDA [Validation Dataset]
 
 
+
 ![](./AssignmentRMDFinal_files/figure-html/PredictionPlot2-1.png) 
 
-###
+
 
 ####Figure 3. GBM Model - Accuracy Plot
 
 ![](./AssignmentRMDFinal_files/figure-html/fitGBMPlot-1.png) 
+
+
 
 
 

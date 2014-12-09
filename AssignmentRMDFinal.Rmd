@@ -3,9 +3,9 @@ title: "Predict How Well People Workout With Dumbbells!"
 author: "Rao Parige"
 date: "December 2014"
 output:
-  pdf_document: default
   html_document:
     keep_md: yes
+  pdf_document: default
 ---
 
 ```{r global1, echo = FALSE, warning=FALSE, message=FALSE, include=FALSE}
