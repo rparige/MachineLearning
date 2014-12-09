@@ -1,8 +1,9 @@
 ---
-title: "Predict How well People Workout With Dumbbells!"
+title: "Predict How Well People Workout With Dumbbells!"
 author: "Rao Parige"
 date: "December 2014"
 output:
+  pdf_document: default
   html_document:
     keep_md: yes
 ---
@@ -209,17 +210,12 @@ Given the large number of predictor variables, the combined prediction model wit
 ```{r MostImpPredictors, echo = FALSE}
 varImp(fitGBM)
 ```
- 
-### 
-###
-###
-###
-###
+
 
 
 ####Figure 1. Prediction Accuracy  - GBM + LDA Combined Model [Validation Dataset]
 
-```{r PredictionPlot1, echo=FALSE, fig.height=4, fig.width=6.9}
+```{r PredictionPlot1, echo=FALSE, fig.height=4, fig.width=5.9}
 validation$Prediction <- pCOMBOv==validation$classe
 qp1 <- qplot(pCOMBOv, fill=Prediction, data=validation)  #1
 qp1<- qp1 + xlab("Predicted Class [Validation Dataset]") + ylab("Count")
@@ -230,21 +226,24 @@ qp1
 ####Figure 2. Prediction Accuracy - GBM vs. LDA [Validation Dataset]
 
 
-```{r PredictionPlot2, echo=FALSE, fig.height=4, fig.width=7.25}
+
+```{r PredictionPlot2, echo=FALSE, fig.height=4, fig.width=6.25}
 EqualPrediction = (pGBMv == pLDAv)
 qp2 <- qplot(classe, fill = EqualPrediction, data=validation)
 qp2 <- qp2 + xlab("Predicted Class [Validation Dataset]") + ylab("Count")
 qp2
 ```
 
-###
+
 
 ####Figure 3. GBM Model - Accuracy Plot
 
-```{r fitGBMPlot, echo = FALSE, fig.height=5.5, fig.width=7}
+```{r fitGBMPlot, echo = FALSE, fig.height=4, fig.width=6.25}
 #par(mfrow = c(2,2))
 plot(fitGBM)
 ```
+
+
 
 ```{r resultsfolder, echo = FALSE}
 # function to create folder for test results

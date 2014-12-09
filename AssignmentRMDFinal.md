@@ -1,4 +1,4 @@
-# Predict How well People Workout With Dumbbells!
+# Predict How Well People Workout With Dumbbells!
 Rao Parige  
 December 2014  
 
